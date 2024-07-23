@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .strategies import BookSuggestion, GenreBasedSuggestionStrategy
 
 class CreateUserView(APIView):
     permission_classes = [AllowAny]
@@ -73,3 +74,11 @@ class GenreFilterView(APIView):
 
         books = [{'id': row[0], 'title': row[1], 'author': row[2], 'genre': row[3]} for row in rows]
         return Response(books)
+
+class BookSuggestionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        suggestion_system = BookSuggestion(GenreBasedSuggestionStrategy())
+        suggestions = suggestion_system.suggest(request.user.id)
+        return Response(suggestions)
